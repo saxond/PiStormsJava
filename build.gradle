@@ -3,44 +3,13 @@ apply plugin: 'maven'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
 
-group = 'com.ergotech'
+group = 'org.daubin'
 version = '1.0-SNAPSHOT'
 
-description = "BrickPi"
+description = "PiStorms"
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
-
-buildscript {
-    repositories {
-        mavenLocal()
-        maven { url "http://repo.maven.apache.org/maven2" }
-    }
-    dependencies {
-        classpath 'org.hidetake:gradle-ssh-plugin:1.1.4'
-    }
-}
-
-apply plugin: 'org.hidetake.ssh'
-
-// we include the pi4j classes in our jar, so we don't want the pi4j library 
-// specified as a dependency in the generated pom.  Creating this separate 
-// configuration accomplishes that.
-configurations {
-    pi4j
-}
-
-eclipse {
-    classpath {
-        plusConfigurations += [ configurations.pi4j ]
-    }
-}
-
-sourceSets {
-    main {
-        compileClasspath += configurations.pi4j
-    }
-}
 
 repositories {        
     mavenLocal()
@@ -54,33 +23,6 @@ dependencies {
     compile 'org.slf4j:slf4j-api:1.7.12'
     compile 'com.google.guava:guava:18.0'
 
-    pi4j name: 'pi4j-core-0.0.5'
-
-// We have to use a modified version of pi4j-core :( 
-//    compile 'com.pi4j:pi4j-core:1.0'
+    compile 'com.pi4j:pi4j-core:1.0'
     testCompile 'junit:junit:4.12'
 }
-
-// include the modified pi4j classes in our jar for ease of use
-jar {
-    from configurations.pi4j.collect { it.isDirectory() ? it : zipTree(it) }
-}
-
-remotes {
-  webServer {
-    host = "$System.env.PI_HOST"
-    user = 'pi'
-    password = "$System.env.PI_PASSWORD"
-    // I could not get SSH keys to work - want to give it a try?
-//    identity = file("${System.getProperty('user.home')}/.ssh/id_rsa")
-  }
-}
-
-task deploy << {
-  ssh.run {
-    session(remotes.webServer) {
-      put from: "$jar.archivePath", into: '.'
-    }
-  }
-}
-deploy.mustRunAfter jar

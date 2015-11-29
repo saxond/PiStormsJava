@@ -25,7 +25,7 @@ public enum SensorType {
 		this.typeId = (byte)typeId;
 	}
 
-	public byte getTypeId() {
+	public byte get() {
 		return typeId;
 	}
 

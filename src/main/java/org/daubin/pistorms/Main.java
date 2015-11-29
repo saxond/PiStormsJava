@@ -13,15 +13,19 @@ public class Main {
 		System.out.println("Firmware Version: " + com.getFirmwareVersion());
 		System.out.println("Battery voltage: " + com.getBatteryVoltage());
 		
-		PSSensor sensor = com.getSensor(PSSensorPort.BBS1);
-		sensor.resetTouches();
+		PSSensor touchSensor = com.getSensor(PSSensorPort.BBS1);
+		touchSensor.resetTouches();
+		touchSensor.setType(SensorType.EV3_SWITCH);
+		
+		PSSensor colorSensor = com.getSensor(PSSensorPort.BBS2);
 		
 		for (int i = 0; i < 10000; i++) {
-			sensor.setType(SensorType.EV3_SWITCH);
+			Color color = colorSensor.getColorSensorEV3();
+			System.err.println("Color: " + color);
 
-			sensor.retrieve();
+			touchSensor.retrieve(1);
 			
-			System.err.println("Touched: " + sensor.isByteOne());
+			System.err.println("Touched: " + touchSensor.isFirstByteEnabled());
 			
 			Thread.sleep(TimeUnit.SECONDS.toMillis(1));
 		}

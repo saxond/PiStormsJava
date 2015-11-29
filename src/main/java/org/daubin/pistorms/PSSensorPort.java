@@ -1,10 +1,10 @@
 package org.daubin.pistorms;
 
-public enum PSSensorPort {
-	BAS1(Bank.A, PiStormsCom.PS_S1_Mode),
-    BAS2(Bank.A, PiStormsCom.PS_S2_Mode),
-    BBS1(Bank.B, PiStormsCom.PS_S1_Mode),
-    BBS2(Bank.B, PiStormsCom.PS_S2_Mode);
+public enum PSSensorPort implements Constants {
+	BAS1(Bank.A, PS_S1_Mode),
+    BAS2(Bank.A, PS_S2_Mode),
+    BBS1(Bank.B, PS_S1_Mode),
+    BBS2(Bank.B, PS_S2_Mode);
 
 	private final Bank bank;
 	private final int mode;
