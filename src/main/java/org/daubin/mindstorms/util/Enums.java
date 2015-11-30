@@ -1,4 +1,4 @@
-package org.daubin.pistorms.util;
+package org.daubin.mindstorms.util;
 
 import java.util.Collections;
 import java.util.Map;

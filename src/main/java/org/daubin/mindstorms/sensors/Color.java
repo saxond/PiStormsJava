@@ -1,8 +1,8 @@
-package org.daubin.pistorms;
+package org.daubin.mindstorms.sensors;
 
 import java.util.Map;
 
-import org.daubin.pistorms.util.Enums;
+import org.daubin.mindstorms.util.Enums;
 
 import com.google.common.base.Supplier;
 

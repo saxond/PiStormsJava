@@ -2,16 +2,21 @@ package org.daubin.pistorms;
 
 import java.io.IOException;
 
+import org.daubin.mindstorms.sensors.Color;
+import org.daubin.mindstorms.sensors.EV3ColorSensor;
+import org.daubin.mindstorms.sensors.Sensor;
+import org.daubin.mindstorms.sensors.TouchSensor;
+
 import com.pi4j.io.i2c.I2CDevice;
 
-public class PSSensor implements Constants {
+class PSSensor implements Constants, Sensor {
 
     private final PSSensorPort port;
     private final I2CDevice i2cDevice;
     private SensorType type;
     private byte[] data = new byte[32];
 
-    public PSSensor(PSSensorPort port, I2CDevice i2cDevice) {
+    protected PSSensor(PSSensorPort port, I2CDevice i2cDevice) {
         this.port = port;
         this.i2cDevice = i2cDevice;
         this.type = SensorType.NONE;
@@ -22,8 +27,9 @@ public class PSSensor implements Constants {
      * 
      * @throws IOException
      */
-    public void retrieve() throws IOException {
-        retrieve(32);
+    @Override
+    public byte[] retrieve() throws IOException {
+        return retrieve(32);
     }
 
     public int readReadyValue() throws IOException {
@@ -34,12 +40,14 @@ public class PSSensor implements Constants {
      * Reads the specified amount of data into the {@link #data} array. length
      * cannot be greater than 32.
      */
-    public void retrieve(int length) throws IOException {
+    @Override
+    public byte[] retrieve(int length) throws IOException {
         if (length > data.length) {
             throw new IOException("Requested length " + length + " exceeds data buffer size of " + data.length);
         }
         i2cDevice.read(PS_EV_Data + port.getMode(), data, 0, length);
 
+        return data;
         /*
          * int ready = i2cDevice.read(PS_EV_Ready + port.getMode()); byte[] id =
          * new byte[16]; i2cDevice.read(PS_EV_SensorID + port.getMode(), id, 0,
@@ -74,6 +82,7 @@ public class PSSensor implements Constants {
     /**
      * Returns true if the first data byte equals 1.
      */
+    @Override
     public boolean isFirstByteEnabled() {
         return data[0] == 1;
     }
@@ -82,12 +91,13 @@ public class PSSensor implements Constants {
         i2cDevice.write(PS_EV_Mode + port.getMode(), mode);
     }
 
+    @Override
     public void resetTouches() throws IOException {
         setType(SensorType.EV3_SWITCH);
         i2cDevice.write(PS_EV_Data + port.getMode() + 1, (byte) 0);
     }
 
-    public void setType(SensorType type) throws IOException {
+    void setType(SensorType type) throws IOException {
         if (!type.equals(this.type)) {
             i2cDevice.write(port.getMode(), type.get());
         }
@@ -95,23 +105,42 @@ public class PSSensor implements Constants {
          * if(self.type != self.PS_SENSOR_TYPE_CUSTOM): time.sleep(1)
          */
     }
+    
+    
 
-    public byte getAmbientLightSensorEV3() throws IOException {
-        setType(SensorType.EV3);
-        setModeEV3((byte) 1);
-        retrieve(1);
-
-        return data[0];
+    @Override
+    public TouchSensor getTouchSensor() throws IOException {
+        setType(SensorType.EV3_SWITCH);
+        return new TouchSensor() {
+            
+            @Override
+            public boolean isSet() throws IOException {
+                retrieve(1);
+                return isFirstByteEnabled();
+            }
+        };
     }
 
-    /**
-     * Reads the color from an EV3 color sensor.
-     */
-    public Color getColorSensorEV3() throws IOException {
+    @Override
+    public EV3ColorSensor getEV3ColorSensor() throws IOException {
         setType(SensorType.EV3);
-        setModeEV3((byte) 2);
-        retrieve(1);
+        return new EV3ColorSensor() {
+            
+            @Override
+            public Color getColor() throws IOException {
+                setModeEV3((byte) 2);
+                retrieve(1);
 
-        return Color.get(data[0]);
+                return Color.get(data[0]);
+            }
+            
+            @Override
+            public byte getAmbientLightValue() throws IOException {
+                setModeEV3((byte) 1);
+                retrieve(1);
+
+                return data[0];
+            }
+        };
     }
 }
