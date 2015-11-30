@@ -13,8 +13,10 @@ import org.daubin.pistorms.PiStormsCom;
 
 public class Main {
 
+    /**
+     * Example usage of the PiStormsJava library.
+     */
     public static void main(String[] args) throws Exception {
-        // PiStorms pi = new PiStorms();
         MindstormsCom com = new PiStormsCom();
 
         System.out.println(com.getDiagnostics());
